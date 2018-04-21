@@ -23,6 +23,22 @@ var projection,
 	model2,
 	modelUniform;
 
+var pause = false;
+var velocidadeTemp = 0;
+var tick = 0;																																		//contador de frame
+var lCubo = 6; 																																	//tamanho dado ao "model" para os lados do cubo +1
+var Snake = {
+	velocidade : 30,																															//quando o contador "tick" atinge este numero o objeto é deslocado
+	direction : [12,13,14],																												// eixos[X,Y,Z]
+	axis : 0,																																			//posicao no vetor direction
+	sentido : 1,																																	// qual sentido ele anda sobre o eixo (-1 ou 1)
+	frente : function(){
+		return (this.axis+1)*this.sentido;
+	},
+	direcAtual : function(){
+		return this.direction[this.axis];
+	}
+};
 
 //Sistema de arquivos
 window.addEventListener("SHADERS_LOADED", main);
@@ -174,7 +190,7 @@ function main() {
 
 	/* UNIFORM */
 	luzUniform = gl.getUniformLocation(shaderProgram,"luz");
-	luz = new Float32Array([3,3,3]);
+	luz = new Float32Array([10,10,10]);
 	gl.uniform3fv(luzUniform, luz);
 
 	projectionUniform = gl.getUniformLocation(shaderProgram,"projection");
@@ -186,14 +202,14 @@ function main() {
 
 	projection = mat4.perspective([],Math.PI/4, window.innerWidth/window.innerHeight, 0.1, 1000);
 
-	camera = [0,0,10];
+	camera = [0,0,50];
 
 	view = mat4.lookAt([],camera,[0,0,0],[0,1,0]);
 
 	model = [
-			1,0,0,0,
-			0,1,0,0,
-			0,0,1,0,
+			5,0,0,0,
+			0,5,0,0,
+			0,0,5,0,
 			0,0,0,1
 	];
 
@@ -201,7 +217,7 @@ function main() {
 			1,0,0,0,
 			0,1,0,0,
 			0,0,1,0,
-			3,0,0,1
+			0,6,0,1
 	];
 
 	gl.uniformMatrix4fv(projectionUniform,gl.FALSE,new Float32Array(projection));
@@ -225,6 +241,7 @@ function animate(){
 	gl.uniformMatrix4fv(modelUniform,gl.FALSE,new Float32Array(model2));
 	gl.drawArrays(gl.TRIANGLES, 0, data.points.length/3);
 	window.requestAnimationFrame(animate);
+	auto();
 }
 
 function resize(){
@@ -243,7 +260,7 @@ function resize(){
 function moveCamera(evt){
 	var y = (evt.y / window.innerHeight) * 20 -10;
 	var x = (evt.x / window.innerWidth) * 20 -10;
-	camera = [x,-y,10];
+	camera = [x,-y,50];																//altera o numero para afastar a camera
 	view = mat4.lookAt([],camera,[0,0,0],[0,1,0]);
 
 	//camera = [x,-y,0];
@@ -252,5 +269,207 @@ function moveCamera(evt){
 	gl.uniformMatrix4fv(viewUniform,gl.FALSE,new Float32Array(view));
 }
 
+function andaManual(evt){
+	console.log(evt.keyCode);
+	switch (evt.keyCode) {
+		case 33:	//PageUp
+			Snake.axis = 2;
+			Snake.sentido = -1;
+			break;
+
+		case 34:	//PageDown
+			Snake.axis = 2;
+			Snake.sentido = 1;
+			break;
+
+		case 37:	//esquerda
+			Snake.axis = 0;
+			Snake.sentido = -1;
+			break;
+
+		case 38:	//cima
+			Snake.axis = 1;
+			Snake.sentido = 1;
+			break;
+
+		case 39:	//direita
+			Snake.axis = 0;
+			Snake.sentido = 1;
+			break;
+
+		case 40: //baixo
+			Snake.axis = 1;
+			Snake.sentido = -1;
+			break;
+
+		case 13:	//enter
+			console.log("pause");
+			if(pause == false){
+				velocidadeTemp = Snake.velocidade;
+				Snake.velocidade = 0;
+				pause = true;
+			}
+			else if(pause == true){
+				Snake.velocidade = velocidadeTemp;
+				velocidadeTemp = 0;
+				pause = false;
+			}
+			break;
+	}
+
+}
+
+function moveAdv(evt){
+	if(evt.keyCode == 37){
+		switch (Snake.frente()) {
+			case 1:
+				if(model2[13] != 0 || model2[14] != 0){
+					Snake.axis = 1;
+				}
+				break;
+			case -1:
+				Snake.axis = 1;
+				break;
+
+			case 2:
+				Snake.axis = 1;
+				break;
+			case -2:
+				Snake.axis = 1;
+				break;
+
+			case 3:
+				Snake.axis = 1;
+				break;
+			case -3:
+				Snake.axis = 1;
+				break;
+
+			default:
+
+		}
+
+	}
+}
+
+function auto(){
+	tick +=1	//soma a cada frame
+
+	if(pause == true){
+		tick = 0;
+	}
+	else if(tick > Snake.velocidade){
+		model2[Snake.direcAtual()] += 1*Snake.sentido;
+		tick = 0;
+		console.log("X:" + model2[12] + " Y:" + model2[13] + " Z:" + model2[14]);
+
+		if(model2[Snake.direcAtual()] >= lCubo || model2[Snake.direcAtual()] <= -lCubo){		//atingiu o limete da face
+			//se esta andando em X troca para Z ou Y
+			if(Snake.direcAtual() == 12){
+				// se verdadeiro troca para Z
+				if(model2[13] > -lCubo && model2[13] < lCubo){
+					//checa se esta na face da frente
+					if(model2[14] == lCubo){
+						Snake.axis = 2;
+						Snake.sentido = -1;
+						model2[Snake.direcAtual()] += 1*Snake.sentido;
+					}
+					//Presume que esta na face de tras
+					else{
+						Snake.axis = 2;
+						Snake.sentido = 1;
+						model2[Snake.direcAtual()] += 1*Snake.sentido;
+					}
+				}
+				//então troca para Y
+				else{
+					//checa se esta na face de cima
+					if (model2[13] == lCubo){
+						Snake.axis = 1;
+						Snake.sentido = -1;
+						model2[Snake.direcAtual()] += 1*Snake.sentido;
+					}
+					//Presume que esta na face de baixo
+					else{
+						Snake.axis = 1;
+						Snake.sentido = 1;
+						model2[Snake.direcAtual()] += 1*Snake.sentido;
+					}
+				}
+			}
+
+			//se esta andando em Y troca para Z ou X
+			else if (Snake.direcAtual()  == 13) {
+				//se verdadeiro troca para Z
+				if(model2[12] > -lCubo && model2[12] < lCubo){
+					//checa se esta na face da frente
+					if(model2[14] == lCubo){
+						Snake.axis = 2;
+						Snake.sentido = -1;
+						model2[Snake.direcAtual()] += 1*Snake.sentido;
+					}
+					//então Presume que esta na face de tras
+					else{
+						Snake.axis = 2;
+						Snake.sentido = 1;
+						model2[Snake.direcAtual()] += 1*Snake.sentido;
+					}
+				}
+
+				//então troca para X
+				else{
+					//checa se esta na face da direita (inicial)
+					if(model2[12] == lCubo){
+						Snake.axis = 0;
+						Snake.sentido = -1;
+						model2[Snake.direcAtual()] += 1*Snake.sentido;
+					}
+					//Presume que esta na face de esquerda (inicial)
+					else{
+						Snake.axis = 0;
+						Snake.sentido = 1;
+						model2[Snake.direcAtual()] += 1*Snake.sentido;
+					}
+				}
+			}
+
+			// presume que esta andando em Z e troca para X ou Y
+			else if (Snake.direcAtual()  == 14) {
+				//se verdadeiro troca para Y
+				if(model2[12] > -lCubo && model2[12] < lCubo){
+					//checa se esta na face de cima
+					if (model2[13] == lCubo){
+						Snake.axis = 1;
+						Snake.sentido = -1;
+						model2[Snake.direcAtual()] += 1*Snake.sentido;
+					}
+					//Presume que esta na face de baixo
+					else{
+						Snake.axis = 1;
+						Snake.sentido = 1;
+						model2[Snake.direcAtual()] += 1*Snake.sentido;
+					}
+				}
+				//então troca para X
+				else{
+					//checa se esta na face da direita (inicial)
+					if(model2[12] == lCubo){
+						Snake.axis = 0;
+						Snake.sentido = -1;
+						model2[Snake.direcAtual()] += 1*Snake.sentido;
+					}
+					//Presume que esta na face de esquerda (inicial)
+					else{
+						Snake.axis = 0;
+						Snake.sentido = 1;
+						model2[Snake.direcAtual()] += 1*Snake.sentido;
+					}
+				}
+			}
+		}
+	}
+}
+
 window.addEventListener("resize",resize);
 window.addEventListener("mousemove",moveCamera);
+window.addEventListener("keydown",andaManual);
