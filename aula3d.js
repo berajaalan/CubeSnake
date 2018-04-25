@@ -12,7 +12,11 @@ var	vertexShaderSource,
 	buffer,
 	nBuffer,
 	data,
-	camera;
+	camera
+	camX = 0,
+	camY = 0,
+	camZ = 50,
+	camTime = 0;
 
 /* MATRIZES */
 var projection,
@@ -257,18 +261,6 @@ function resize(){
 	gl.viewport(0, 0, w, h);
 }
 
-function moveCamera(evt){
-	var y = (evt.y / window.innerHeight) * 20 -10;
-	var x = (evt.x / window.innerWidth) * 20 -10;
-	camera = [x,-y,50];																//altera o numero para afastar a camera
-	view = mat4.lookAt([],camera,[0,0,0],[0,1,0]);
-
-	//camera = [x,-y,0];
-	//view = mat4.lookAt([],[0,0,10],camera,[0,1,0]);
-
-	gl.uniformMatrix4fv(viewUniform,gl.FALSE,new Float32Array(view));
-}
-
 function andaManual(evt){
 	console.log(evt.keyCode);
 	switch (evt.keyCode) {
@@ -361,7 +353,7 @@ function auto(){
 	else if(tick > Snake.velocidade){
 		model2[Snake.direcAtual()] += 1*Snake.sentido;
 		tick = 0;
-		console.log("X:" + model2[12] + " Y:" + model2[13] + " Z:" + model2[14]);
+//		console.log("X:" + model2[12] + " Y:" + model2[13] + " Z:" + model2[14]);
 
 		if(model2[Snake.direcAtual()] >= lCubo || model2[Snake.direcAtual()] <= -lCubo){		//atingiu o limete da face
 			//se esta andando em X troca para Z ou Y
@@ -470,6 +462,42 @@ function auto(){
 	}
 }
 
+function moveCamera(evt){
+	console.log("X:" + camX
+						+ " Y:" + camY
+						+ " Z:" + camZ
+						+ " Time:" + camTime
+
+					);
+	switch (evt.keyCode) {
+		case 100:
+			camX = 0
+			camY = 0
+			camZ = -50;
+			break;
+		case 97:
+			camX = 0
+			camY = 0
+			camZ = 50;
+			break;
+		case 119:
+			camX = 50
+			camY = 0
+			camZ = 0;
+			break;
+		case 115:
+			camX = -50
+			camY = 0
+			camZ = 0;
+			break;
+	}
+
+	camera = [camX,-camY,camZ];																//altera o numero para afastar a camera
+	view = mat4.lookAt([],camera,[0,0,0],[0,1,0]);
+
+	gl.uniformMatrix4fv(viewUniform,gl.FALSE,new Float32Array(view));
+}
+
 window.addEventListener("resize",resize);
-window.addEventListener("mousemove",moveCamera);
+window.addEventListener("keypress",moveCamera);
 window.addEventListener("keydown",andaManual);
