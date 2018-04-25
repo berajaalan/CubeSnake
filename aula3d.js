@@ -16,7 +16,12 @@ var	vertexShaderSource,
 	camX = 0,
 	camY = 0,
 	camZ = 50,
-	camTime = 0;
+	lookTime = 0,
+	lookLeft = false,
+	lookRight = false,
+	lookUp = false,
+	lookDown = false,
+	lookBack = false;
 
 /* MATRIZES */
 var projection,
@@ -25,7 +30,8 @@ var projection,
 	viewUniform,
 	model,
 	model2,
-	modelUniform;
+	modelUniform
+	keys =[];
 
 var pause = false;
 var velocidadeTemp = 0;
@@ -246,6 +252,7 @@ function animate(){
 	gl.drawArrays(gl.TRIANGLES, 0, data.points.length/3);
 	window.requestAnimationFrame(animate);
 	auto();
+	moveCamera();
 }
 
 function resize(){
@@ -462,33 +469,90 @@ function auto(){
 	}
 }
 
-function moveCamera(evt){
-	console.log("X:" + camX
-						+ " Y:" + camY
-						+ " Z:" + camZ
-						+ " Time:" + camTime
+function keyPressed(e){
+	switch (e.keyCode) {
+		case 32:
+			lookBack = true;
+			break;
+		case 87:
+			lookUp = true;
+			break;
+		case 65: // a
+			lookLeft = true;
+			break;
+		case 83: // s
+			lookDown = true;
+			break;
+		case 68: // d
+			lookRight = true;
+			break;
+	}
+}
 
-					);
-	switch (evt.keyCode) {
-		case 100:
-			camX = 0
-			camY = 0
-			camZ = -50;
+function keyReleased(e){
+	switch (e.keyCode) {
+		case 32:
+			lookBack = false;
 			break;
-		case 97:
-			camX = 0
-			camY = 0
-			camZ = 50;
+		case 87:
+			lookUp = false;
 			break;
-		case 119:
-			camX = 50
-			camY = 0
-			camZ = 0;
+		case 65: // a
+			lookLeft = false;
 			break;
-		case 115:
-			camX = -50
-			camY = 0
-			camZ = 0;
+		case 83: // s
+			lookDown = false;
+			break;
+		case 68: // d
+			lookRight = false;
+			break;
+	}
+}
+
+function moveCamera(){
+
+	//console.log("X:" + camX + " Y:" + camY + " Z:" + camZ + " lookDown:" + lookDown + " lookRight:" + lookRight);
+	switch (1) {
+		case 1:
+			if (lookUp) {
+				if (lookTime < 10) {
+					camY -= 2;
+					lookTime ++;
+				}
+			}else if (lookDown) {
+				if (lookTime < 10) {
+					camY += 2;
+					lookTime ++;
+				}
+			}else if (lookLeft) {
+				if (lookTime < 10) {
+					camX -= 2;
+					lookTime ++;
+				}
+			}else if (lookRight) {
+				if (lookTime < 10) {
+					camX += 2;
+					lookTime ++;
+				}
+			}else if (lookBack) {
+				camZ = -50;
+			}else{
+				if (camX > 0) {
+					camX -= 2;
+					lookTime = 0;
+				}else if (camX < 0) {
+					camX += 2;
+					lookTime = 0;
+				}else if (camY > 0) {
+					camY -= 2;
+					lookTime = 0;
+				}else if (camY < 0) {
+					camY += 2;
+					lookTime = 0;
+				}else if (camZ != 50) {
+					camZ = 50;
+				}
+			}
 			break;
 	}
 
@@ -499,5 +563,6 @@ function moveCamera(evt){
 }
 
 window.addEventListener("resize",resize);
-window.addEventListener("keypress",moveCamera);
+window.addEventListener("keyup",keyReleased);
+window.addEventListener("keydown",keyPressed);
 window.addEventListener("keydown",andaManual);
