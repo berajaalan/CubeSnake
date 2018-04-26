@@ -20,7 +20,6 @@ var projection,
 	view,
 	viewUniform,
 	model,
-	model2,
 	modelUniform;
 
 var pause = false;
@@ -28,17 +27,34 @@ var velocidadeTemp = 0;
 var tick = 0;																																		//contador de frame
 var lCubo = 6; 																																	//tamanho dado ao "model" para os lados do cubo +1
 var Snake = {
+	pos : [0,0,6],
 	velocidade : 30,																															//quando o contador "tick" atinge este numero o objeto é deslocado
 	direction : [12,13,14],																												// eixos[X,Y,Z]
 	axis : 0,																																			//posicao no vetor direction
 	sentido : 1,																																	// qual sentido ele anda sobre o eixo (-1 ou 1)
+	tamanho : 2,
+	modelHead : [
+			1,0,0,0,
+			0,1,0,0,
+			0,0,1,0,
+			0,0,6,1
+	],
 	frente : function(){
 		return (this.axis+1)*this.sentido;
 	},
 	direcAtual : function(){
 		return this.direction[this.axis];
+	},
+	draw(){
+		gl.uniformMatrix4fv(modelUniform,gl.FALSE,new Float32Array(this.modelHead));
+		gl.drawArrays(gl.TRIANGLES, 0, data.points.length/3);
 	}
 };
+
+var bodyList = [];
+bodyList.push( new SnakeBody([-1,0,6],Snake));
+bodyList.push( new SnakeBody([-2,0,6],bodyList[0]));
+bodyList.push( new SnakeBody([-3,0,6],bodyList[1]));
 
 //Sistema de arquivos
 window.addEventListener("SHADERS_LOADED", main);
@@ -212,13 +228,14 @@ function main() {
 			0,0,5,0,
 			0,0,0,1
 	];
-
-	model2 = [
+	/*
+	Snake.modelHead = [
 			1,0,0,0,
 			0,1,0,0,
 			0,0,1,0,
-			0,6,0,1
+			0,0,6,1
 	];
+	*/
 
 	gl.uniformMatrix4fv(projectionUniform,gl.FALSE,new Float32Array(projection));
 
@@ -238,10 +255,10 @@ function animate(){
 	gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
 	gl.uniformMatrix4fv(modelUniform,gl.FALSE,new Float32Array(model));
 	gl.drawArrays(gl.TRIANGLES, 0, data.points.length/3);
-	gl.uniformMatrix4fv(modelUniform,gl.FALSE,new Float32Array(model2));
-	gl.drawArrays(gl.TRIANGLES, 0, data.points.length/3);
+	Snake.draw();
 	window.requestAnimationFrame(animate);
 	auto();
+	DrawBody(Snake.tamanho);
 }
 
 function resize(){
@@ -323,7 +340,7 @@ function moveAdv(evt){
 	if(evt.keyCode == 37){
 		switch (Snake.frente()) {
 			case 1:
-				if(model2[13] != 0 || model2[14] != 0){
+				if(Snake.modelHead[13] != 0 || Snake.modelHead[14] != 0){
 					Snake.axis = 1;
 				}
 				break;
@@ -359,41 +376,55 @@ function auto(){
 		tick = 0;
 	}
 	else if(tick > Snake.velocidade){
-		model2[Snake.direcAtual()] += 1*Snake.sentido;
-		tick = 0;
-		console.log("X:" + model2[12] + " Y:" + model2[13] + " Z:" + model2[14]);
+		Snake.modelHead[Snake.direcAtual()] += 1*Snake.sentido;
+		switch (Snake.direcAtual()) {
+			case 12:
+				Snake.pos[0] = Snake.modelHead[12];
+				break;
+			case 13:
+				Snake.pos[1] = Snake.modelHead[13];
+				break;
+			case 14:
+				Snake.pos[2] = Snake.modelHead[14];
+				break;
+			default:
 
-		if(model2[Snake.direcAtual()] >= lCubo || model2[Snake.direcAtual()] <= -lCubo){		//atingiu o limete da face
+		}
+
+		tick = 0;
+		console.log("X:" + Snake.modelHead[12] + " Y:" + Snake.modelHead[13] + " Z:" + Snake.modelHead[14]);
+
+		if(Snake.modelHead[Snake.direcAtual()] >= lCubo || Snake.modelHead[Snake.direcAtual()] <= -lCubo){		//atingiu o limete da face
 			//se esta andando em X troca para Z ou Y
 			if(Snake.direcAtual() == 12){
 				// se verdadeiro troca para Z
-				if(model2[13] > -lCubo && model2[13] < lCubo){
+				if(Snake.modelHead[13] > -lCubo && Snake.modelHead[13] < lCubo){
 					//checa se esta na face da frente
-					if(model2[14] == lCubo){
+					if(Snake.modelHead[14] == lCubo){
 						Snake.axis = 2;
 						Snake.sentido = -1;
-						model2[Snake.direcAtual()] += 1*Snake.sentido;
+						Snake.modelHead[Snake.direcAtual()] += 1*Snake.sentido;
 					}
 					//Presume que esta na face de tras
 					else{
 						Snake.axis = 2;
 						Snake.sentido = 1;
-						model2[Snake.direcAtual()] += 1*Snake.sentido;
+						Snake.modelHead[Snake.direcAtual()] += 1*Snake.sentido;
 					}
 				}
 				//então troca para Y
 				else{
 					//checa se esta na face de cima
-					if (model2[13] == lCubo){
+					if (Snake.modelHead[13] == lCubo){
 						Snake.axis = 1;
 						Snake.sentido = -1;
-						model2[Snake.direcAtual()] += 1*Snake.sentido;
+						Snake.modelHead[Snake.direcAtual()] += 1*Snake.sentido;
 					}
 					//Presume que esta na face de baixo
 					else{
 						Snake.axis = 1;
 						Snake.sentido = 1;
-						model2[Snake.direcAtual()] += 1*Snake.sentido;
+						Snake.modelHead[Snake.direcAtual()] += 1*Snake.sentido;
 					}
 				}
 			}
@@ -401,34 +432,34 @@ function auto(){
 			//se esta andando em Y troca para Z ou X
 			else if (Snake.direcAtual()  == 13) {
 				//se verdadeiro troca para Z
-				if(model2[12] > -lCubo && model2[12] < lCubo){
+				if(Snake.modelHead[12] > -lCubo && Snake.modelHead[12] < lCubo){
 					//checa se esta na face da frente
-					if(model2[14] == lCubo){
+					if(Snake.modelHead[14] == lCubo){
 						Snake.axis = 2;
 						Snake.sentido = -1;
-						model2[Snake.direcAtual()] += 1*Snake.sentido;
+						Snake.modelHead[Snake.direcAtual()] += 1*Snake.sentido;
 					}
 					//então Presume que esta na face de tras
 					else{
 						Snake.axis = 2;
 						Snake.sentido = 1;
-						model2[Snake.direcAtual()] += 1*Snake.sentido;
+						Snake.modelHead[Snake.direcAtual()] += 1*Snake.sentido;
 					}
 				}
 
 				//então troca para X
 				else{
 					//checa se esta na face da direita (inicial)
-					if(model2[12] == lCubo){
+					if(Snake.modelHead[12] == lCubo){
 						Snake.axis = 0;
 						Snake.sentido = -1;
-						model2[Snake.direcAtual()] += 1*Snake.sentido;
+						Snake.modelHead[Snake.direcAtual()] += 1*Snake.sentido;
 					}
 					//Presume que esta na face de esquerda (inicial)
 					else{
 						Snake.axis = 0;
 						Snake.sentido = 1;
-						model2[Snake.direcAtual()] += 1*Snake.sentido;
+						Snake.modelHead[Snake.direcAtual()] += 1*Snake.sentido;
 					}
 				}
 			}
@@ -436,37 +467,74 @@ function auto(){
 			// presume que esta andando em Z e troca para X ou Y
 			else if (Snake.direcAtual()  == 14) {
 				//se verdadeiro troca para Y
-				if(model2[12] > -lCubo && model2[12] < lCubo){
+				if(Snake.modelHead[12] > -lCubo && Snake.modelHead[12] < lCubo){
 					//checa se esta na face de cima
-					if (model2[13] == lCubo){
+					if (Snake.modelHead[13] == lCubo){
 						Snake.axis = 1;
 						Snake.sentido = -1;
-						model2[Snake.direcAtual()] += 1*Snake.sentido;
+						Snake.modelHead[Snake.direcAtual()] += 1*Snake.sentido;
 					}
 					//Presume que esta na face de baixo
 					else{
 						Snake.axis = 1;
 						Snake.sentido = 1;
-						model2[Snake.direcAtual()] += 1*Snake.sentido;
+						Snake.modelHead[Snake.direcAtual()] += 1*Snake.sentido;
 					}
 				}
 				//então troca para X
 				else{
 					//checa se esta na face da direita (inicial)
-					if(model2[12] == lCubo){
+					if(Snake.modelHead[12] == lCubo){
 						Snake.axis = 0;
 						Snake.sentido = -1;
-						model2[Snake.direcAtual()] += 1*Snake.sentido;
+						Snake.modelHead[Snake.direcAtual()] += 1*Snake.sentido;
 					}
 					//Presume que esta na face de esquerda (inicial)
 					else{
 						Snake.axis = 0;
 						Snake.sentido = 1;
-						model2[Snake.direcAtual()] += 1*Snake.sentido;
+						Snake.modelHead[Snake.direcAtual()] += 1*Snake.sentido;
 					}
 				}
 			}
 		}
+
+		bodyList[0].nextStep = Snake.pos;
+		/*		adicionar novo "corpo"
+		for (i = 0;i < Snake.tamanho; i ++){
+			bodyList[i] = new corpoSnake
+		}*/
+	}
+}
+
+function SnakeBody(pos,next){
+	this.prox = next;
+	this.pos = pos;
+	this.nextStep = this.prox.pos;
+	this.SnakeBody = [
+		0.75,0,0,0,
+		0,0.75,0,0,
+		0,0,0.75,0,
+		this.pos[0],this.pos[1],this.pos[2],1
+	];
+	this.setProx = function(snk) {this.prox = snk;};
+	this.passo = function(){
+		this.pos = this.nextStep;
+		this.nextStep = this.prox.pos;
+		this.SnakeBody[12] = this.pos[0];
+		this.SnakeBody[13] = this.pos[1];
+		this.SnakeBody[14] = this.pos[2];
+		this.draw();
+	};
+	this.draw =	function(){
+		gl.uniformMatrix4fv(modelUniform,gl.FALSE,new Float32Array(this.SnakeBody));
+		gl.drawArrays(gl.TRIANGLES, 0, data.points.length/3);
+	}
+}
+
+function DrawBody(qtd){
+	for(i = 0; i < qtd; i++){
+		bodyList[i].draw();
 	}
 }
 
