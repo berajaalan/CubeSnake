@@ -21,7 +21,8 @@ var	vertexShaderSource,
 	lookRight = false,
 	lookUp = false,
 	lookDown = false,
-	lookBack = false;
+	lookBack = false
+	currentSide = 1;
 
 /* MATRIZES */
 var projection,
@@ -486,6 +487,65 @@ function keyPressed(e){
 		case 68: // d
 			lookRight = true;
 			break;
+		case 49: // 1
+			currentSide = 1;
+			camX = 0;
+			camY = 0;
+			camZ = 50;
+			break;
+		case 50: // 2
+			currentSide = 2;
+			camX = 50;
+			camY = 0;
+			camZ = 0;
+			break;
+		case 51: // 3
+			currentSide = 3;
+			camX = -50;
+			camY = 0;
+			camZ = 0;
+			break;
+		case 52: // 4
+			currentSide = 4;
+			camX = 0;
+			camY = 50;
+			camZ = 0.1;
+			break;
+		case 53: // 5
+			currentSide = 5;
+			camX = 0;
+			camY = -50;
+			camZ = 0.1;
+			break;
+		case 54: // 6
+			currentSide = 6;
+			camX = 0;
+			camY = 0;
+			camZ = -50;
+			break;
+
+
+
+		// Debug
+
+		case 73: // i
+			camZ += 10;
+			break;
+		case 74: // j
+			camX -= 10;
+			break;
+		case 75: // k
+			camZ -= 10;
+			break;
+		case 76: // l
+			camX += 10;
+			break;
+		case 85: // u
+			camY -= 10;
+			break;
+		case 79: // o
+			camY += 10;
+			break;
 	}
 }
 
@@ -506,13 +566,31 @@ function keyReleased(e){
 		case 68: // d
 			lookRight = false;
 			break;
+			case 49: // 1
+				currentSide = 1;
+				break;
+			case 50: // 2
+				currentSide = 2;
+				break;
+			case 51: // 3
+				currentSide = 3;
+				break;
+			case 52: // 4
+				currentSide = 4;
+				break;
+			case 53: // 5
+				currentSide = 5;
+				break;
+			case 54: // 6
+				currentSide = 6;
+				break;
 	}
 }
 
 function moveCamera(){
 
-	//console.log("X:" + camX + " Y:" + camY + " Z:" + camZ + " lookDown:" + lookDown + " lookRight:" + lookRight);
-	switch (1) {
+	console.log("X:" + camX + " Y:" + camY + " Z:" + camZ + " cS:" + currentSide);
+	switch (currentSide) {
 		case 1:
 			if (lookUp) {
 				if (lookTime < 10) {
@@ -539,19 +617,211 @@ function moveCamera(){
 			}else{
 				if (camX > 0) {
 					camX -= 2;
-					lookTime = 0;
 				}else if (camX < 0) {
 					camX += 2;
-					lookTime = 0;
 				}else if (camY > 0) {
 					camY -= 2;
-					lookTime = 0;
 				}else if (camY < 0) {
 					camY += 2;
-					lookTime = 0;
 				}else if (camZ != 50) {
 					camZ = 50;
 				}
+				lookTime = 0;
+			}
+			break;
+
+		case 2:
+			if (lookUp) {
+				if (lookTime < 10) {
+					camY -= 2;
+					lookTime ++;
+				}
+			}else if (lookDown) {
+				if (lookTime < 10) {
+					camY += 2;
+					lookTime ++;
+				}
+			}else if (lookLeft) {
+				if (lookTime < 10) {
+					camZ += 2;
+					lookTime ++;
+				}
+			}else if (lookRight) {
+				if (lookTime < 10) {
+					camZ -= 2;
+					lookTime ++;
+				}
+			}else if (lookBack) {
+				camX = -50;
+			}else{
+				if (camZ < 0) {
+					camZ += 2;
+				}else if (camZ > 0) {
+					camZ -= 2;
+				}else if (camY > 0) {
+					camY -= 2;
+				}else if (camY < 0) {
+					camY += 2;
+				}else if (camX != 50) {
+					camX = 50;
+				}
+				lookTime = 0;
+			}
+			break;
+
+		case 3:
+			if (lookUp) {
+				if (lookTime < 10) {
+					camY -= 2;
+					lookTime ++;
+				}
+			}else if (lookDown) {
+				if (lookTime < 10) {
+					camY += 2;
+					lookTime ++;
+				}
+			}else if (lookLeft) {
+				if (lookTime < 10) {
+					camZ -= 2;
+					lookTime ++;
+				}
+			}else if (lookRight) {
+				if (lookTime < 10) {
+					camZ += 2;
+					lookTime ++;
+				}
+			}else if (lookBack) {
+				camX = 50;
+			}else{
+				if (camZ < 0) {
+					camZ += 2;
+				}else if (camZ > 0) {
+					camZ -= 2;
+				}else if (camY > 0) {
+					camY -= 2;
+				}else if (camY < 0) {
+					camY += 2;
+				}else if (camX != -50) {
+					camX = -50;
+				}
+				lookTime = 0;
+			}
+			break;
+
+		case 4:
+			if (lookUp) {
+				if (lookTime < 10) {
+					camZ -= 2;
+					lookTime ++;
+				}
+			}else if (lookDown) {
+				if (lookTime < 10) {
+					camZ += 2;
+					lookTime ++;
+				}
+			}else if (lookLeft) {
+				if (lookTime < 10) {
+					camX -= 2;
+					lookTime ++;
+				}
+			}else if (lookRight) {
+				if (lookTime < 10) {
+					camX += 2;
+					lookTime ++;
+				}
+			}else if (lookBack) {
+				camY = -50;
+			}else{
+				if (camX > 0) {
+					camX -= 2;
+				}else if (camX < 0) {
+					camX += 2;
+				}else if (camZ > 0.1) {
+					camZ = 0.1;
+				}else if (camZ < 0.1) {
+					camZ = 0.1;
+				}else if (camY != 50) {
+					camY = 50;
+				}
+				lookTime = 0;
+			}
+			break;
+
+		case 5:
+			if (lookUp) {
+				if (lookTime < 10) {
+					camZ -= 2;
+					lookTime ++;
+				}
+			}else if (lookDown) {
+				if (lookTime < 10) {
+					camZ += 2;
+					lookTime ++;
+				}
+			}else if (lookLeft) {
+				if (lookTime < 10) {
+					camX -= 2;
+					lookTime ++;
+				}
+			}else if (lookRight) {
+				if (lookTime < 10) {
+					camX += 2;
+					lookTime ++;
+				}
+			}else if (lookBack) {
+				camY = -50;
+			}else{
+				if (camX > 0.1) {
+					camX -= 2;
+				}else if (camX < 0.1) {
+					camX += 2;
+				}else if (camZ > 0) {
+					camZ -= 2;
+				}else if (camZ < 0) {
+					camZ += 2;
+				}else if (camY != 50) {
+					camY = -50;
+				}
+				lookTime = 0;
+			}
+			break;
+
+		case 6:
+			if (lookUp) {
+				if (lookTime < 10) {
+					camY -= 2;
+					lookTime ++;
+				}
+			}else if (lookDown) {
+				if (lookTime < 10) {
+					camY += 2;
+					lookTime ++;
+				}
+			}else if (lookLeft) {
+				if (lookTime < 10) {
+					camX += 2;
+					lookTime ++;
+				}
+			}else if (lookRight) {
+				if (lookTime < 10) {
+					camX -= 2;
+					lookTime ++;
+				}
+			}else if (lookBack) {
+				camZ = 50;
+			}else{
+				if (camX > 0) {
+					camX -= 2;
+				}else if (camX < 0) {
+					camX += 2;
+				}else if (camY > 0) {
+					camY -= 2;
+				}else if (camY < 0) {
+					camY += 2;
+				}else if (camZ != -50) {
+					camZ = -50;
+				}
+				lookTime = 0;
 			}
 			break;
 	}
