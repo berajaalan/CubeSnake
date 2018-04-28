@@ -32,7 +32,7 @@ var Snake = {
 	direction : [12,13,14],																												// eixos[X,Y,Z]
 	axis : 0,																																			//posicao no vetor direction
 	sentido : 1,																																	// qual sentido ele anda sobre o eixo (-1 ou 1)
-	tamanho : 2,
+	tamanho : 3,
 	modelHead : [
 			1,0,0,0,
 			0,1,0,0,
@@ -52,7 +52,7 @@ var Snake = {
 };
 
 var bodyList = [];
-bodyList.push( new SnakeBody([-1,0,6],Snake));
+bodyList.push( new SnakeBody([-1,0,6], Snake));
 bodyList.push( new SnakeBody([-2,0,6],bodyList[0]));
 bodyList.push( new SnakeBody([-3,0,6],bodyList[1]));
 
@@ -376,6 +376,13 @@ function auto(){
 		tick = 0;
 	}
 	else if(tick > Snake.velocidade){
+		bodyList[0].pos[0] = Snake.pos[0];
+		bodyList[0].pos[1] = Snake.pos[1];
+		bodyList[0].pos[2] = Snake.pos[2];
+		console.log("body 0 " + bodyList[0].pos);
+		console.log("body 1 " + bodyList[1].pos);
+		console.log("body 2 " + bodyList[2].pos);
+		MoveBody(Snake.tamanho);
 		Snake.modelHead[Snake.direcAtual()] += 1*Snake.sentido;
 		switch (Snake.direcAtual()) {
 			case 12:
@@ -392,7 +399,7 @@ function auto(){
 		}
 
 		tick = 0;
-		console.log("X:" + Snake.modelHead[12] + " Y:" + Snake.modelHead[13] + " Z:" + Snake.modelHead[14]);
+		//console.log("X:" + Snake.modelHead[12] + " Y:" + Snake.modelHead[13] + " Z:" + Snake.modelHead[14]);
 
 		if(Snake.modelHead[Snake.direcAtual()] >= lCubo || Snake.modelHead[Snake.direcAtual()] <= -lCubo){		//atingiu o limete da face
 			//se esta andando em X troca para Z ou Y
@@ -499,7 +506,7 @@ function auto(){
 			}
 		}
 
-		bodyList[0].nextStep = Snake.pos;
+
 		/*		adicionar novo "corpo"
 		for (i = 0;i < Snake.tamanho; i ++){
 			bodyList[i] = new corpoSnake
@@ -519,12 +526,12 @@ function SnakeBody(pos,next){
 	];
 	this.setProx = function(snk) {this.prox = snk;};
 	this.passo = function(){
+		this.draw();
 		this.pos = this.nextStep;
 		this.nextStep = this.prox.pos;
 		this.SnakeBody[12] = this.pos[0];
 		this.SnakeBody[13] = this.pos[1];
 		this.SnakeBody[14] = this.pos[2];
-		this.draw();
 	};
 	this.draw =	function(){
 		gl.uniformMatrix4fv(modelUniform,gl.FALSE,new Float32Array(this.SnakeBody));
@@ -533,8 +540,14 @@ function SnakeBody(pos,next){
 }
 
 function DrawBody(qtd){
-	for(i = 0; i < qtd; i++){
+	for(i = 1; i < qtd; i++){
 		bodyList[i].draw();
+	}
+}
+
+function MoveBody(qtd){
+	for(i = qtd-1; i > 0; i--){
+		bodyList[i].passo();
 	}
 }
 
