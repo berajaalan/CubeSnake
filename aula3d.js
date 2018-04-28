@@ -509,13 +509,13 @@ function keyPressed(e){
 			currentSide = 4;
 			camX = 0;
 			camY = 50;
-			camZ = 0.1;
+			camZ = 0;
 			break;
 		case 53: // 5
 			currentSide = 5;
 			camX = 0;
 			camY = -50;
-			camZ = 0.1;
+			camZ = 0;
 			break;
 		case 54: // 6
 			currentSide = 6;
@@ -566,30 +566,38 @@ function keyReleased(e){
 		case 68: // d
 			lookRight = false;
 			break;
-			case 49: // 1
-				currentSide = 1;
-				break;
-			case 50: // 2
-				currentSide = 2;
-				break;
-			case 51: // 3
-				currentSide = 3;
-				break;
-			case 52: // 4
-				currentSide = 4;
-				break;
-			case 53: // 5
-				currentSide = 5;
-				break;
-			case 54: // 6
-				currentSide = 6;
-				break;
+		case 49: // 1
+			currentSide = 1;
+			break;
+		case 50: // 2
+			currentSide = 2;
+			break;
+		case 51: // 3
+			currentSide = 3;
+			break;
+		case 52: // 4
+			currentSide = 4;
+			break;
+		case 53: // 5
+			currentSide = 5;
+			break;
+		case 54: // 6
+			currentSide = 6;
+			break;
 	}
 }
 
 function moveCamera(){
 
-	console.log("X:" + camX + " Y:" + camY + " Z:" + camZ + " cS:" + currentSide);
+	var up = [0,1,0];
+
+	if (currentSide == 4 || currentSide == 5) {
+		up = [0,0,-1];
+	}else {
+		up = [0,1,0];
+	}
+
+	//console.log("X:" + camX + " Y:" + camY + " Z:" + camZ + " cS:" + currentSide);
 	switch (currentSide) {
 		case 1:
 			if (lookUp) {
@@ -736,10 +744,10 @@ function moveCamera(){
 					camX -= 2;
 				}else if (camX < 0) {
 					camX += 2;
-				}else if (camZ > 0.1) {
-					camZ = 0.1;
-				}else if (camZ < 0.1) {
-					camZ = 0.1;
+				}else if (camZ > 0) {
+					camZ -= 2;
+				}else if (camZ < 0) {
+					camZ += 2;
 				}else if (camY != 50) {
 					camY = 50;
 				}
@@ -771,9 +779,9 @@ function moveCamera(){
 			}else if (lookBack) {
 				camY = -50;
 			}else{
-				if (camX > 0.1) {
+				if (camX > 0) {
 					camX -= 2;
-				}else if (camX < 0.1) {
+				}else if (camX < 0) {
 					camX += 2;
 				}else if (camZ > 0) {
 					camZ -= 2;
@@ -827,7 +835,7 @@ function moveCamera(){
 	}
 
 	camera = [camX,-camY,camZ];																//altera o numero para afastar a camera
-	view = mat4.lookAt([],camera,[0,0,0],[0,1,0]);
+	view = mat4.lookAt([],camera,[0,0,0],up);
 
 	gl.uniformMatrix4fv(viewUniform,gl.FALSE,new Float32Array(view));
 }
