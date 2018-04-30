@@ -22,7 +22,8 @@ var	vertexShaderSource,
 	lookUp = false,
 	lookDown = false,
 	lookBack = false
-	currentSide = 1;
+	currentSide = 1,
+	comidas = 0;
 
 /* MATRIZES */
 var projection,
@@ -31,15 +32,20 @@ var projection,
 	viewUniform,
 	model,
 	model2,
-	modelUniform
-	keys =[];
+	modelUniform;
 
+var l1 = new Lado(1,l5,l4,l3,l2),
+		l2 = new Lado(2,l5,l4,l1,l6),
+		l3 = new Lado(3,l5,l4,l6,l1),
+		l4 = new Lado(4,l6,l1,l2,l3),
+		l5 = new Lado(5,l6,l1,l3,l2),
+		l6 = new Lado(6,l5,l4,l2,l3);
 var pause = false;
 var velocidadeTemp = 0;
 var tick = 0;																																		//contador de frame
 var lCubo = 6; 																																	//tamanho dado ao "model" para os lados do cubo +1
 var Snake = {
-	velocidade : 30,																															//quando o contador "tick" atinge este numero o objeto é deslocado
+	velocidade : 10,																															//quando o contador "tick" atinge este numero o objeto é deslocado
 	direction : [12,13,14],																												// eixos[X,Y,Z]
 	axis : 0,																																			//posicao no vetor direction
 	sentido : 1,																																	// qual sentido ele anda sobre o eixo (-1 ou 1)
@@ -50,6 +56,34 @@ var Snake = {
 		return this.direction[this.axis];
 	}
 };
+
+function Lado (id, top, down, left, right){
+	this.id = id;
+	this.top = top;
+	this.down = down;
+	this.left = left;
+	this.right = right;
+	this.side = [ [0, 0, 0, 0, 0, 0],
+								[0, 0, 0, 0, 0, 0],
+				  			[0, 0, 0, 0, 0, 0],
+								[0, 0, 0, 0, 0, 0],
+								[0, 0, 0, 0, 0, 0],
+								[0, 0, 0, 0, 0, 0]
+							];
+
+	this.cria = function(){
+		for (var i = 0; i < this.side.length; i++) {
+			for (var j = 0; j < this.side[0].length; j++) {
+				var d = Math.random();
+				if ( d < 0.8) {
+					this.side[i][j] = 0;
+				}else{
+					this.side[i][j] = 1
+				}
+			}
+		}
+	}
+}
 
 //Sistema de arquivos
 window.addEventListener("SHADERS_LOADED", main);
@@ -173,6 +207,14 @@ function flatten(nested){
 }
 
 function main() {
+
+	l1.cria();
+	l2.cria();
+	l3.cria();
+	l4.cria();
+	l5.cria();
+	l6.cria();
+
 	/* LOAD GL */
 	getGLContext();
 
@@ -254,6 +296,7 @@ function animate(){
 	window.requestAnimationFrame(animate);
 	auto();
 	moveCamera();
+	comida();
 }
 
 function resize(){
@@ -361,7 +404,7 @@ function auto(){
 	else if(tick > Snake.velocidade){
 		model2[Snake.direcAtual()] += 1*Snake.sentido;
 		tick = 0;
-//		console.log("X:" + model2[12] + " Y:" + model2[13] + " Z:" + model2[14]);
+		//console.log("X:" + model2[12] + " Y:" + model2[13] + " Z:" + model2[14]);
 
 		if(model2[Snake.direcAtual()] >= lCubo || model2[Snake.direcAtual()] <= -lCubo){		//atingiu o limete da face
 			//se esta andando em X troca para Z ou Y
@@ -838,6 +881,68 @@ function moveCamera(){
 	view = mat4.lookAt([],camera,[0,0,0],up);
 
 	gl.uniformMatrix4fv(viewUniform,gl.FALSE,new Float32Array(view));
+}
+
+function comida(){
+	var d = Math.floor(Math.random() * 6) + 1;
+	var i = Math.floor(Math.random() * 6), j = Math.floor(Math.random() * 6);
+	if (comidas < 3) {
+		switch (d) {
+			case 1:
+				while (l1.side[i][j] != 0) {
+					i = Math.floor(Math.random() * 6);
+					j = Math.floor(Math.random() * 6);
+				}
+				l1.side[i][j] = 2;
+				comidas ++;
+				break;
+
+			case 2:
+				while (l2.side[i][j] != 0) {
+					i = Math.floor(Math.random() * 6);
+					j = Math.floor(Math.random() * 6);
+				}
+				l2.side[i][j] = 2;
+				comidas ++;
+				break;
+
+			case 3:
+				while (l3.side[i][j] != 0) {
+					i = Math.floor(Math.random() * 6);
+					j = Math.floor(Math.random() * 6);
+				}
+				l3.side[i][j] = 2;
+				comidas ++;
+				break;
+
+			case 4:
+				while (l4.side[i][j] != 0) {
+					i = Math.floor(Math.random() * 6);
+					j = Math.floor(Math.random() * 6);
+				}
+				l4.side[i][j] = 2;
+				comidas ++;
+				break;
+
+			case 5:
+				while (l5.side[i][j] != 0) {
+					i = Math.floor(Math.random() * 6);
+					j = Math.floor(Math.random() * 6);
+				}
+				l5.side[i][j] = 2;
+				comidas ++;
+				break;
+
+			case 6:
+				while (l6.side[i][j] != 0) {
+					i = Math.floor(Math.random() * 6);
+					j = Math.floor(Math.random() * 6);
+				}
+				l6.side[i][j] = 2;
+				comidas ++;
+				break;
+		}
+	}
 }
 
 window.addEventListener("resize",resize);
