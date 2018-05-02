@@ -153,6 +153,15 @@ function getData(){
 		[0,0,1]
 	];
 
+	var c = [
+		[1.0,0.0,0.0],
+		[0.0,1.0,0.0],
+		[0.0,0.0,1.0],
+		[1.0,1.0,0.0],
+		[1.0,0.0,1.0],
+		[0.0,1.0,1.0],
+	];
+
 	var normais = [
 		n[0],n[0],n[0],
 		n[0],n[0],n[0],
@@ -192,9 +201,34 @@ function getData(){
 		p[2],p[3],p[6],
 		p[3],p[6],p[7]
 	];
+
+	var cores = [
+		c[0],c[0],c[0],
+		c[0],c[0],c[0],
+
+		c[1],c[1],c[1],
+		c[1],c[1],c[1],
+
+		c[2],c[2],c[2],
+		c[2],c[2],c[2],
+
+		c[3],c[3],c[3],
+		c[3],c[3],c[3],
+
+		c[4],c[4],c[4],
+		c[4],c[4],c[4],
+
+		c[5],c[5],c[5],
+		c[5],c[5],c[5],
+
+		c[6],c[6],c[6],
+		c[6],c[6],c[6]
+	];
+
 	return {
 		"points": new Float32Array(flatten(faces)),
-		"normais": new Float32Array(flatten(normais))
+		"normais": new Float32Array(flatten(normais)),
+		"color" : new Float32Array(flatten(cores))
 	};
 }
 
@@ -240,6 +274,13 @@ function main() {
 	gl.bufferData(gl.ARRAY_BUFFER, data.normais, gl.STATIC_DRAW);
 	gl.enableVertexAttribArray(normalAttr);
 	gl.vertexAttribPointer(normalAttr, 3, gl.FLOAT, false, 0, 0);
+
+	colorAttr = gl.getAttribLocation(shaderProgram, "color");
+	cBuffer = gl.createBuffer();
+	gl.bindBuffer(gl.ARRAY_BUFFER, cBuffer);
+	gl.bufferData(gl.ARRAY_BUFFER, data.color, gl.STATIC_DRAW);
+	gl.enableVertexAttribArray(colorAttr);
+	gl.vertexAttribPointer(colorAttr, 3, gl.FLOAT, false, 0, 0);
 
 	/* UNIFORM */
 	luzUniform = gl.getUniformLocation(shaderProgram,"luz");
