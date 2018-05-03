@@ -21,7 +21,7 @@ var	vertexShaderSource,
 	lookRight = false,
 	lookUp = false,
 	lookDown = false,
-	lookBack = false
+	lookBack = false,
 	currentSide = 1,
 	comidas = 0;
 
@@ -32,57 +32,212 @@ var projection,
 	viewUniform,
 	model,
 	model2,
-	modelUniform;
+	modelUniform,
+	cobra = [];
 
-var l1 = new Lado(1,l5,l4,l3,l2),
-		l2 = new Lado(2,l5,l4,l1,l6),
-		l3 = new Lado(3,l5,l4,l6,l1),
-		l4 = new Lado(4,l6,l1,l2,l3),
-		l5 = new Lado(5,l6,l1,l3,l2),
-		l6 = new Lado(6,l5,l4,l2,l3);
+var l1 = new Lado(1,l5,l4,l3,l2,
+									[[0, 0, 0, 0, 0, 0],
+									 [0, 0, 0, 0, 0, 0],
+									 [0, 0, 0, 0, 0, 0],
+									 [0, 0, 0, 0, 0, 0],
+									 [0, 0, 0, 0, 0, 0],
+									 [0, 0, 0, 0, 0, 0]
+									]),
+		l2 = new Lado(2,l5,l4,l1,l6,
+									[[0, 0, 0, 0, 0, 0],
+									 [0, 0, 0, 0, 0, 0],
+									 [0, 0, 0, 0, 0, 0],
+									 [0, 0, 0, 0, 0, 0],
+									 [0, 0, 0, 0, 0, 0],
+									 [0, 0, 0, 0, 0, 0]
+									]),
+		l3 = new Lado(3,l5,l4,l6,l1,
+									[[0, 0, 0, 0, 0, 0],
+									 [0, 0, 0, 0, 0, 0],
+									 [0, 0, 0, 0, 0, 0],
+									 [0, 0, 0, 0, 0, 0],
+									 [0, 0, 0, 0, 0, 0],
+									 [0, 0, 0, 0, 0, 0]
+									]),
+		l4 = new Lado(4,l6,l1,l2,l3,
+									[[0, 0, 0, 0, 0, 0],
+									 [0, 0, 0, 0, 0, 0],
+									 [0, 0, 0, 0, 0, 0],
+									 [0, 0, 0, 0, 0, 0],
+									 [0, 0, 0, 0, 0, 0],
+									 [0, 0, 0, 0, 0, 0]
+									]),
+		l5 = new Lado(5,l6,l1,l3,l2,
+									[[0, 0, 0, 0, 0, 0],
+									 [0, 0, 0, 0, 0, 0],
+									 [0, 0, 0, 0, 0, 0],
+									 [0, 0, 0, 0, 0, 0],
+									 [0, 0, 0, 0, 0, 0],
+									 [0, 0, 0, 0, 0, 0]
+									]),
+		l6 = new Lado(6,l5,l4,l2,l3,
+									[[0, 0, 0, 0, 0, 0],
+									 [0, 0, 0, 0, 0, 0],
+									 [0, 0, 0, 0, 0, 0],
+									 [0, 0, 0, 0, 0, 0],
+									 [0, 0, 0, 0, 0, 0],
+									 [0, 0, 0, 0, 0, 0]
+									]);
 var pause = false;
-var velocidadeTemp = 0;
-var tick = 0;																																		//contador de frame
-var lCubo = 6; 																																	//tamanho dado ao "model" para os lados do cubo +1
-var Snake = {
-	velocidade : 10,																															//quando o contador "tick" atinge este numero o objeto é deslocado
-	direction : [12,13,14],																												// eixos[X,Y,Z]
-	axis : 0,																																			//posicao no vetor direction
-	sentido : 1,																																	// qual sentido ele anda sobre o eixo (-1 ou 1)
-	frente : function(){
-		return (this.axis+1)*this.sentido;
-	},
-	direcAtual : function(){
-		return this.direction[this.axis];
-	}
-};
+var tick = 0; // contador de frame
 
-function Lado (id, top, down, left, right){
+function Snake (head, pos, face){
+	this.pos = pos;// Y, X
+	this.face = face;
+	this.sentido = 'd';
+	this.head = head;
+
+	this.adv = function(){
+		/*if(!pause){
+			switch (this.sentido) {
+				case 'd':
+					if (this.pos[0] == 5) {
+						//this.face = this.face.down;
+						this.pos[0] = 0;
+					}else if (this.head) {
+						if (this.pos[0]+1 == 2){
+							var p = cobra[cobra.length-1].pos;
+							cobra.push(new Snake(false, p));
+							this.pos[0] ++;
+						}
+					}else{
+						this.pos[0] ++;
+					}
+					break;
+				case 'r':
+					if (this.pos[1] == 5) {
+						this.face = this.face.right;
+						this.pos[1] = 0;
+					}else if (this.head) {
+						if (this.pos[1]+1 == 2){
+							var p = cobra[cobra.length-1].pos;
+							cobra.push(new Snake(false, p));
+							this.pos[1] ++;
+						}
+					}else{
+						this.pos[1] ++;
+					}
+					break;
+				case 't':
+					if (this.pos[0] == 0) {
+						this.face = this.face.top;
+						this.pos[0] = 5;
+					}else if (this.head) {
+						if (this.pos[0]-1 == 2){
+							var p = cobra[cobra.length-1].pos;
+							cobra.push(new Snake(false, p));
+							this.pos[0] --;
+						}
+					}else{
+						this.pos[0] --;
+					}
+					break;
+				case 'l':
+					if (this.pos[1] == 0) {
+						this.face = this.face.left;
+						this.pos[1] = 5;
+					}else if (this.head) {
+						if (this.pos[1]-1 == 2){
+							var p = cobra[cobra.length-1].pos;
+							cobra.push(new Snake(false, p));
+							this.pos[1] --;
+						}
+					}else{
+						this.pos[1] --;
+					}
+					break;
+			}
+
+			if (this.head) {
+				this.face.side[this.pos[0]][this.pos[1]] = -1;
+			}else{
+				this.face.side[this.pos[0]][this.pos[1]] = -2;
+			}
+		}*/
+		switch (this.sentido) {
+			case 'd':
+				if(this.afrente() == 1){	//colidiu com parede
+					console.log("parede");
+				}
+				else if (this.afrente() == 2) {	//colidiu com comida
+					console.log("comida");
+				}
+				else {
+					this.pos[0] ++;
+				}
+				break;
+			case 'r':
+				if(this.afrente() == 1){	//colidiu com parede
+					console.log("parede");
+				}
+				else if (this.afrente() == 2) {	//colidiu com comida
+					console.log("comida");
+				}
+				else {
+					this.pos[1] ++;
+				}
+				break;
+			case 't':
+				if(this.afrente() == 1){	//colidiu com parede
+					console.log("parede");
+				}
+				else if (this.afrente() == 2) {	//colidiu com comida
+					console.log("comida");
+				}
+				else {
+					this.pos[0] --;
+				}
+				break;
+			case 'l':
+				if(this.afrente() == 1){	//colidiu com parede
+					console.log("parede");
+				}
+				else if (this.afrente() == 2) {	//colidiu com comida
+					console.log("comida");
+				}
+				else {
+					this.pos[1] --;
+				}
+				break;
+
+		}
+		this.face.side[this.pos[0]][this.pos[1]] = -1;
+	}
+	this.afrente = function(){
+		switch (this.sentido) {
+			case 'd':
+				if (this.pos[0] == 5){
+					console.log("Transicao");
+				}else {
+					return this.face.side[this.pos[0]+1][this.pos[1]];
+				}
+				break;
+			case 'l':
+				return this.face.side[this.pos[0]][this.pos[1]-1];
+				break;
+			case 't' :
+				return this.face.side[this.pos[0]-1][this.pos[1]];
+				break;
+			case 'r' :
+				return this.face.side[this.pos[0]][this.pos[1]+1];
+				break;
+		}
+	}
+
+}
+
+function Lado (id, top, down, left, right, v){
 	this.id = id;
 	this.top = top;
 	this.down = down;
 	this.left = left;
 	this.right = right;
-	this.side = [ [0, 0, 0, 0, 0, 0],
-								[0, 0, 0, 0, 0, 0],
-				  			[0, 0, 0, 0, 0, 0],
-								[0, 0, 0, 0, 0, 0],
-								[0, 0, 0, 0, 0, 0],
-								[0, 0, 0, 0, 0, 0]
-							];
-
-	this.cria = function(){
-		for (var i = 0; i < this.side.length; i++) {
-			for (var j = 0; j < this.side[0].length; j++) {
-				var d = Math.random();
-				if ( d < 0.8) {
-					this.side[i][j] = 0;
-				}else{
-					this.side[i][j] = 1
-				}
-			}
-		}
-	}
+	this.side = v;
 }
 
 //Sistema de arquivos
@@ -159,7 +314,7 @@ function getData(){
 		[0.0,0.0,1.0],
 		[1.0,1.0,0.0],
 		[1.0,0.0,1.0],
-		[0.0,1.0,1.0],
+		[0.0,1.0,1.0]
 	];
 
 	var normais = [
@@ -199,7 +354,10 @@ function getData(){
 		p[4],p[6],p[7],
 
 		p[2],p[3],p[6],
-		p[3],p[6],p[7]
+		p[3],p[6],p[7],
+
+		//Paredes
+
 	];
 
 	var cores = [
@@ -242,12 +400,9 @@ function flatten(nested){
 
 function main() {
 
-	l1.cria();
-	l2.cria();
-	l3.cria();
-	l4.cria();
-	l5.cria();
-	l6.cria();
+	cobra.push(new Snake(true, [2,2], l1));
+	cobra.push(new Snake(false, [1,2], l1));
+	cobra.push(new Snake(false, [0,2], l1));
 
 	/* LOAD GL */
 	getGLContext();
@@ -307,13 +462,6 @@ function main() {
 			0,0,0,1
 	];
 
-	model2 = [
-			1,0,0,0,
-			0,1,0,0,
-			0,0,1,0,
-			0,6,0,1
-	];
-
 	gl.uniformMatrix4fv(projectionUniform,gl.FALSE,new Float32Array(projection));
 
 	gl.uniformMatrix4fv(viewUniform,gl.FALSE,new Float32Array(view));
@@ -332,10 +480,20 @@ function animate(){
 	gl.clear( gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT );
 	gl.uniformMatrix4fv(modelUniform,gl.FALSE,new Float32Array(model));
 	gl.drawArrays(gl.TRIANGLES, 0, data.points.length/3);
-	gl.uniformMatrix4fv(modelUniform,gl.FALSE,new Float32Array(model2));
-	gl.drawArrays(gl.TRIANGLES, 0, data.points.length/3);
 	window.requestAnimationFrame(animate);
-	auto();
+	if (tick > 60){
+		if(!pause){
+
+			console.log(l1.side);
+			cobra[0].adv();
+			for (var i = cobra.length-1; i > 0 ; i--) {
+				cobra[i].pos = cobra[i-1].pos;
+			}
+		}
+		tick = 0;
+	}else{
+		tick++;
+	}
 	moveCamera();
 	comida();
 }
@@ -351,207 +509,6 @@ function resize(){
 	canvas.setAttribute("width",w);
 	canvas.setAttribute("height",h);
 	gl.viewport(0, 0, w, h);
-}
-
-function andaManual(evt){
-	console.log(evt.keyCode);
-	switch (evt.keyCode) {
-		case 33:	//PageUp
-			Snake.axis = 2;
-			Snake.sentido = -1;
-			break;
-
-		case 34:	//PageDown
-			Snake.axis = 2;
-			Snake.sentido = 1;
-			break;
-
-		case 37:	//esquerda
-			Snake.axis = 0;
-			Snake.sentido = -1;
-			break;
-
-		case 38:	//cima
-			Snake.axis = 1;
-			Snake.sentido = 1;
-			break;
-
-		case 39:	//direita
-			Snake.axis = 0;
-			Snake.sentido = 1;
-			break;
-
-		case 40: //baixo
-			Snake.axis = 1;
-			Snake.sentido = -1;
-			break;
-
-		case 13:	//enter
-			console.log("pause");
-			if(pause == false){
-				velocidadeTemp = Snake.velocidade;
-				Snake.velocidade = 0;
-				pause = true;
-			}
-			else if(pause == true){
-				Snake.velocidade = velocidadeTemp;
-				velocidadeTemp = 0;
-				pause = false;
-			}
-			break;
-	}
-
-}
-
-function moveAdv(evt){
-	if(evt.keyCode == 37){
-		switch (Snake.frente()) {
-			case 1:
-				if(model2[13] != 0 || model2[14] != 0){
-					Snake.axis = 1;
-				}
-				break;
-			case -1:
-				Snake.axis = 1;
-				break;
-
-			case 2:
-				Snake.axis = 1;
-				break;
-			case -2:
-				Snake.axis = 1;
-				break;
-
-			case 3:
-				Snake.axis = 1;
-				break;
-			case -3:
-				Snake.axis = 1;
-				break;
-
-			default:
-
-		}
-
-	}
-}
-
-function auto(){
-	tick +=1	//soma a cada frame
-
-	if(pause == true){
-		tick = 0;
-	}
-	else if(tick > Snake.velocidade){
-		model2[Snake.direcAtual()] += 1*Snake.sentido;
-		tick = 0;
-		//console.log("X:" + model2[12] + " Y:" + model2[13] + " Z:" + model2[14]);
-
-		if(model2[Snake.direcAtual()] >= lCubo || model2[Snake.direcAtual()] <= -lCubo){		//atingiu o limete da face
-			//se esta andando em X troca para Z ou Y
-			if(Snake.direcAtual() == 12){
-				// se verdadeiro troca para Z
-				if(model2[13] > -lCubo && model2[13] < lCubo){
-					//checa se esta na face da frente
-					if(model2[14] == lCubo){
-						Snake.axis = 2;
-						Snake.sentido = -1;
-						model2[Snake.direcAtual()] += 1*Snake.sentido;
-					}
-					//Presume que esta na face de tras
-					else{
-						Snake.axis = 2;
-						Snake.sentido = 1;
-						model2[Snake.direcAtual()] += 1*Snake.sentido;
-					}
-				}
-				//então troca para Y
-				else{
-					//checa se esta na face de cima
-					if (model2[13] == lCubo){
-						Snake.axis = 1;
-						Snake.sentido = -1;
-						model2[Snake.direcAtual()] += 1*Snake.sentido;
-					}
-					//Presume que esta na face de baixo
-					else{
-						Snake.axis = 1;
-						Snake.sentido = 1;
-						model2[Snake.direcAtual()] += 1*Snake.sentido;
-					}
-				}
-			}
-
-			//se esta andando em Y troca para Z ou X
-			else if (Snake.direcAtual()  == 13) {
-				//se verdadeiro troca para Z
-				if(model2[12] > -lCubo && model2[12] < lCubo){
-					//checa se esta na face da frente
-					if(model2[14] == lCubo){
-						Snake.axis = 2;
-						Snake.sentido = -1;
-						model2[Snake.direcAtual()] += 1*Snake.sentido;
-					}
-					//então Presume que esta na face de tras
-					else{
-						Snake.axis = 2;
-						Snake.sentido = 1;
-						model2[Snake.direcAtual()] += 1*Snake.sentido;
-					}
-				}
-
-				//então troca para X
-				else{
-					//checa se esta na face da direita (inicial)
-					if(model2[12] == lCubo){
-						Snake.axis = 0;
-						Snake.sentido = -1;
-						model2[Snake.direcAtual()] += 1*Snake.sentido;
-					}
-					//Presume que esta na face de esquerda (inicial)
-					else{
-						Snake.axis = 0;
-						Snake.sentido = 1;
-						model2[Snake.direcAtual()] += 1*Snake.sentido;
-					}
-				}
-			}
-
-			// presume que esta andando em Z e troca para X ou Y
-			else if (Snake.direcAtual()  == 14) {
-				//se verdadeiro troca para Y
-				if(model2[12] > -lCubo && model2[12] < lCubo){
-					//checa se esta na face de cima
-					if (model2[13] == lCubo){
-						Snake.axis = 1;
-						Snake.sentido = -1;
-						model2[Snake.direcAtual()] += 1*Snake.sentido;
-					}
-					//Presume que esta na face de baixo
-					else{
-						Snake.axis = 1;
-						Snake.sentido = 1;
-						model2[Snake.direcAtual()] += 1*Snake.sentido;
-					}
-				}
-				//então troca para X
-				else{
-					//checa se esta na face da direita (inicial)
-					if(model2[12] == lCubo){
-						Snake.axis = 0;
-						Snake.sentido = -1;
-						model2[Snake.direcAtual()] += 1*Snake.sentido;
-					}
-					//Presume que esta na face de esquerda (inicial)
-					else{
-						Snake.axis = 0;
-						Snake.sentido = 1;
-						model2[Snake.direcAtual()] += 1*Snake.sentido;
-					}
-				}
-			}
-		}
-	}
 }
 
 function keyPressed(e){
@@ -607,28 +564,36 @@ function keyPressed(e){
 			camY = 0;
 			camZ = -50;
 			break;
+		case 33:	//PageUp
 
+			break;
+		case 34:	//PageDown
 
+			break;
+		case 37:	//esquerda
 
-		// Debug
+			break;
+		case 38:	//cima
 
-		case 73: // i
-			camZ += 10;
 			break;
-		case 74: // j
-			camX -= 10;
+		case 39:	//direita
+
 			break;
-		case 75: // k
-			camZ -= 10;
+		case 40: //baixo
+
 			break;
-		case 76: // l
-			camX += 10;
-			break;
-		case 85: // u
-			camY -= 10;
-			break;
-		case 79: // o
-			camY += 10;
+		case 13:	//enter
+			console.log("pause");
+			if(pause == false){
+				velocidadeTemp = Snake.velocidade;
+				Snake.velocidade = 0;
+				pause = true;
+			}
+			else if(pause == true){
+				Snake.velocidade = velocidadeTemp;
+				velocidadeTemp = 0;
+				pause = false;
+			}
 			break;
 	}
 }
@@ -989,4 +954,3 @@ function comida(){
 window.addEventListener("resize",resize);
 window.addEventListener("keyup",keyReleased);
 window.addEventListener("keydown",keyPressed);
-window.addEventListener("keydown",andaManual);
