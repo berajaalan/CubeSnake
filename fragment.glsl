@@ -13,6 +13,8 @@ uniform vec3 luz;
 
 varying vec3 vpos;
 
+varying vec3 fcolor;
+
 varying vec3 vnormal;
 
 void main() {
@@ -27,5 +29,5 @@ void main() {
 
 	float total = max(ambiente, lambert);
 
-	gl_FragColor = vec4(total * vec3(1.0, 0.0 , 0.0) , 1.0);
+	gl_FragColor = vec4(total * fcolor , 1.0);
 }
